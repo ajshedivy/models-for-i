@@ -14,7 +14,7 @@ This repo contains a simple way to download models from huggingface and transfer
 
 2. Clone the repo
     ```bash
-    git clone
+    git clone https://github.com/ajshedivy/models-for-i.git
     cd models-for-i
     ```
 3. Create a Hugging Face account and create an access token
