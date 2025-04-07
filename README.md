@@ -1,6 +1,5 @@
 ## Models for IBM i
-
-This repo contains a simple way to download models from huggingface and transfer them to IBM i using `scp` or your preferred transfer method.
+This repository provides an easy-to-follow process for downloading models from Hugging Face and transferring them to IBM i using `scp` or another transfer method. The models can then be used on IBM i with Llama.cpp.
 
 ## Requirements
 - uv python package manager
