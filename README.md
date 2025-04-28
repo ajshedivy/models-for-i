@@ -22,14 +22,14 @@ This repository provides an easy-to-follow process for downloading models from H
   
 4. Login into Hugging Face using the command line:
    ```bash
-   uv huggingface-cli login
+   uv run huggingface-cli login
    ```
    Enter your access token when prompted.
 
 5. Download the model
 
     ```bash
-    uv run downlaod_model.py models-for-i/Llama-3.2-1B-Instruct
+    uv run download_model.py models-for-i/Llama-3.2-1B-Instruct
     ```
     This will download the model to the `models/Llama-3.2-1B-Instruct` directory.
 
