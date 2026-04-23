@@ -9,6 +9,9 @@ Browse available pre-converted models on the [Hugging Face Models for i page](ht
 - [Prerequisites](#prerequisites)
 - [Workflow Options](#workflow-options)
   - [Option 1: Use Pre-Converted Models](#option-1-use-pre-converted-models)
+    - [Download Methods](#download-methods)
+      - [Method 1: Hugging Face CLI (Recommended)](#method-1-hugging-face-cli-recommended)
+      - [Method 2: Curl](#method-2-curl)
   - [Option 2: Convert Models Yourself](#option-2-convert-models-yourself)
 - [Supported Models](#supported-models)
 - [Tool Reference](#tool-reference)
@@ -26,7 +29,10 @@ The model is now ready to use with Llama.cpp on IBM i.
 
 ## Prerequisites
 
-- **For downloading pre-converted models**: None (use `curl` or `wget` directly on IBM i)
+- **For downloading pre-converted models**:
+  - `curl` or `wget` (included in IBM i PASE) for direct downloads, or
+  - Python 3.13 and the `huggingface_hub[cli]` package for the `hf` CLI method (see [Method 1](#method-1-hugging-face-cli-recommended) below)
+  - A Hugging Face account and access token (CLI method only)
 - **For converting models locally**:
   - `uv` Python package manager
   - Hugging Face account and access token
@@ -43,16 +49,90 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Pre-converted Big Endian models are available on Hugging Face and can be downloaded directly to IBM i.
 
-**Step 1: Download the model on IBM i**
+#### Download Methods
+
+There are two ways to download models from Hugging Face. The **Hugging Face CLI method is recommended** for easier management and future downloads.
+
+##### Method 1: Hugging Face CLI (Recommended)
+
+**Step 1: Set up the Hugging Face environment**
+
+Create a dedicated directory for Hugging Face tools:
+
+```bash
+mkdir -p huggingface
+cd huggingface
+```
+
+**Step 2: Create a Python virtual environment**
+
+```bash
+python3.13 -m venv . --system-site-packages
+source ./bin/activate
+```
+
+**Step 3: Install the Hugging Face CLI**
+
+```bash
+pip install "huggingface_hub[cli]"
+```
+
+**Step 4: Authenticate with Hugging Face**
+
+First, create a Hugging Face account if you don't have one:
+
+- Visit https://huggingface.co/
+- Sign up for a free account
+- Navigate to Settings → Access Tokens
+- Click "New token" and create a token with "Read" permissions
+- Copy the token (you'll need it in the next step)
+
+Now authenticate on IBM i:
+
+```bash
+hf auth login
+```
+
+When prompted, paste your access token and press Enter.
+
+**Step 5: Download model**
+
+```bash
+hf download --local-dir $HOME/models models-for-i/Llama-3.2-1B-Instruct
+```
+
+The download will begin and show progress. This may take several minutes depending on your connection speed.
+
+**Step 6: Verify Download**
+
+```bash
+ls -lh ~/models/Llama-3.2-1B-Instruct
+```
+
+##### Method 2: Curl
+
+If you prefer a simpler approach or can't use the CLI, download directly with curl:
+
+**Step 1: Navigate to your `models` directory:**
+
+```bash
+cd ~/models
+```
+
+**Step 2: Download the model file**
 
 ```bash
 curl -L -o Llama-3.2-1B-Instruct-f32-be.gguf \
   https://huggingface.co/models-for-i/Llama-3.2-1B-Instruct/resolve/main/Llama-3.2-1B-Instruct-f32-be.gguf
 ```
 
-**Step 2: Use with Llama.cpp**
+**Step 3: Verify the download**
 
-The model is ready to use immediately.
+```bash
+ls -lh Llama-3.2-1B-Instruct-f32-be.gguf
+```
+
+Once you've successfully downloaded your model using either method, you're ready to use it with Llama.cpp on IBM i.
 
 ### Option 2: Convert Models Yourself
 
@@ -112,6 +192,17 @@ A 1 billion parameter model fine-tuned for instruction following.
   ```bash
   curl -L -o Llama-3.2-1B-Instruct-f32-be.gguf \
     https://huggingface.co/models-for-i/Llama-3.2-1B-Instruct/resolve/main/Llama-3.2-1B-Instruct-f32-be.gguf
+  ```
+
+### gemma-4-E2B-it
+Google's Gemma 4 E2B instruction-tuned model (efficient 2B-class variant).
+
+- **Format**: GGUF (Q4_K_M, Big Endian)
+- **Repository**: [models-for-i/gemma-4-E2B-it](https://huggingface.co/models-for-i/gemma-4-E2B-it)
+- **Direct Download**:
+  ```bash
+  curl -L -o gemma-4-E2B-it-Q4_K_M-be.gguf \
+    https://huggingface.co/models-for-i/gemma-4-E2B-it/resolve/main/gemma-4-E2B-it-Q4_K_M-be.gguf
   ```
 
 ## Tool Reference

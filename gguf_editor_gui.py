@@ -21,10 +21,6 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
-# Necessary to load the local gguf package
-if "NO_LOCAL_GGUF" not in os.environ and (Path(__file__).parent.parent.parent.parent / 'gguf-py').exists():
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
 import gguf
 from gguf import GGUFReader, GGUFWriter, GGUFValueType, ReaderField
 from gguf.constants import TokenType, RopeScalingType, PoolingType, GGMLQuantizationType
