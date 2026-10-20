@@ -4,31 +4,20 @@ When the compatibility check or `--dry-run` reports `Cannot handle type <QTYPE>`
 
 ## Pattern
 
-1. Write a `byteswap_<qtype>(tensor, block_offs)` function that swaps the float fields at their known offsets within the block.
-2. Register it in the `byteswap_tensors` dict with the matching `gguf.GGMLQuantizationType` key.
-
-Example (already in-tree, added for Q5_K):
+Add one entry to the `QUANT_LAYOUTS` table: `(block size in bytes, byte offsets of the 16-bit fields)`. Every byte not listed is left untouched. Take the offsets from the C struct in `ggml-common.h` (tables below), never from memory.
 
 ```python
-def byteswap_q5_k(tensor, block_offs):
-    # Each block_q5_k (176 bytes) starts with two f16 values (d, dmin) followed by
-    # 12 + 32 + 128 = 172 uint8 values. Only the two f16 fields need byteswapping.
-
-    delta = tensor.data[block_offs:block_offs + 2].view(dtype=np.uint16)
-    delta.byteswap(inplace=True)
-
-    delta = tensor.data[block_offs + 2:block_offs + 4].view(dtype=np.uint16)
-    delta.byteswap(inplace=True)
-
-
-byteswap_tensors = {
+QUANT_LAYOUTS = {
     ...
-    gguf.GGMLQuantizationType.Q5_K:  byteswap_q5_k,
+    # block_q5_K: d (f16), dmin (f16), scales[12], qh[32], qs[128].
+    gguf.GGMLQuantizationType.Q5_K: (176, (0, 2)),
     ...
 }
 ```
 
-The `block_size` is looked up automatically via `gguf.constants.GGML_QUANT_SIZES[tensor_type][1]` — you don't need to hardcode it, only the offsets within a block.
+Types whose blocks contain only single-byte fields (e.g. MXFP4) go in `NO_SWAP_QUANT_TYPES` instead. `_swap_u16_fields` swaps 16-bit lanes only, so a type with a 32-bit field (Q5_0/Q5_1 `qh`) also needs a 32-bit swap added.
+
+An unreleased build once got the Q4_K/Q5_K offsets wrong (it used the last four bytes) and its own unit test encoded the same mistake. Verify against the struct and against an independent converter, not only against the in-tree tests.
 
 ## Block layouts (K-quants, QK_K=256)
 
@@ -71,6 +60,8 @@ After adding a handler, dry-run against a file of the newly-supported type:
 uv run gguf_convert_endian.py models/<name>/<file>.gguf big --dry-run --verbose
 ```
 
-It should log `Preparing to convert from LITTLE to BIG` and exit 0 without any `Cannot handle type` errors.
+It should list the tensor type counts, log `Dry run complete; no changes made.` and exit 0 without any `Cannot handle type` errors.
+
+Then prove the byte layout. Convert a copy with the in-tree script and with upstream `.venv/lib/python3.12/site-packages/gguf/scripts/gguf_convert_endian.py` (if it supports the type) and compare SHA-256 values; also convert back to little-endian and check that the original SHA-256 returns. Add the new type to `tests/test_gguf_convert_endian.py`.
 
 If extending the in-tree `gguf_convert_endian.py` (the top-level copy used by the project), the same fix should be applied to `gguf-py/gguf/scripts/gguf_convert_endian.py` if that copy is also used, but in this project only the top-level script is invoked via `uv run`.

@@ -62,7 +62,7 @@ hf download <owner>/<repo> <quant-file>.gguf --local-dir models/<name>
 
 ## 4. Convert
 
-The converter modifies the file in-place and prompts `YES, I am sure>` before writing. Pipe `YES` in:
+The converter modifies the file in-place and asks for exactly `YES` before writing. Pipe `YES` in (or pass `--yes`):
 
 ```bash
 echo "YES" | uv run gguf_convert_endian.py models/<name>/<quant-file>.gguf big
@@ -114,7 +114,7 @@ Then upload with **Xet disabled**:
 HF_HUB_DISABLE_XET=1 hf upload models-for-i/<name> models/<name> \
   --repo-type model \
   --commit-message "Add big-endian <quant> converted from <source-owner>/<source-repo>" \
-  --exclude ".cache/*"
+  --exclude ".cache/*" --exclude "*.endian-manifest.json"
 ```
 
 **Why `HF_HUB_DISABLE_XET=1`:** the default Xet uploader hangs after partial uploads against this collection (sockets stall in CLOSE_WAIT, ~72% in; observed twice). Plain HTTPS/LFS uploads cleanly at 7-9 MB/s with no intervention needed. Always use the flag until the upstream xet-core bug is fixed.
