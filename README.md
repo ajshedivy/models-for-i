@@ -172,7 +172,10 @@ hf download unsloth/gpt-oss-20b-GGUF gpt-oss-20b-Q4_0.gguf --local-dir models/gp
 uv run gguf_convert_endian.py models/gpt-oss-20b/gpt-oss-20b-Q4_0.gguf big
 ```
 
-> **Note**: This modifies the file in-place. The original file will be converted to Big Endian format.
+> **Note**: This modifies the file in-place. Keep the original little-endian
+> download so conversion can be repeated. A successful conversion also writes a
+> JSON manifest beside the GGUF with source/output SHA-256 values, quantization
+> mix, converter version, and target byte order.
 
 **Step 5: Transfer to IBM i**
 
@@ -213,7 +216,7 @@ Convert GGUF model files between different byte orders.
 
 **Usage**:
 ```bash
-uv run gguf_convert_endian.py [-h] [--dry-run] [--verbose] model {big,little,native}
+uv run gguf_convert_endian.py [-h] [--dry-run] [--yes] [--manifest PATH] [--verbose] model {big,little,native}
 ```
 
 **Arguments**:
@@ -223,6 +226,8 @@ uv run gguf_convert_endian.py [-h] [--dry-run] [--verbose] model {big,little,nat
 **Options**:
 - `-h, --help`: Show help message
 - `--dry-run`: Preview changes without modifying files
+- `--yes`: Skip the in-place modification confirmation
+- `--manifest PATH`: Write the conversion manifest to this path
 - `--verbose`: Increase output verbosity
 
 **Example**:
